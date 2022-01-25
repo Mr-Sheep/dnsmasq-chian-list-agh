@@ -1,0 +1,36 @@
+name: parse latest dnsmasq-china-list
+
+on:
+  push:
+    paths-ignore:
+      - .github/workflow/parse-on-push.yml
+
+jobs:
+  get-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ github.token }}
+      - name: Fetch latest dnsmasq-china-list
+        run: |
+          wget https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf
+      - name: Find and Replace
+        uses: jacobtomlinson/gha-find-replace@v2
+        with: 
+          find: "server="
+          replace: "["
+          regex: false
+      - name: Find and Replace #2
+        uses: jacobtomlinson/gha-find-replace@v2
+        with:
+          find: "114.114.114.114"
+          replace: "]https://doh.pub/dns-query"
+          regex: false
+      - name: Commit latest release version
+        run: |
+          git config --global user.name 'Snorlax'
+          git config --global user.email '24599209+Mr-Sheep@users.noreply.github.com'
+          git add accelerated-domains.china.conf
+          git commit -m "daily update from dnsmasq-china-list"
+          git push
