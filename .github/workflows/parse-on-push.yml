@@ -36,6 +36,7 @@ jobs:
           echo "https://101.6.6.6:8443/dns-query" >> accelerated-domains.china.default.conf
           echo "https://dns.cloudflare.com/dns-query" >> accelerated-domains.china.default.conf
           echo "https://dns.google/dns-query" >> accelerated-domains.china.default.conf
+          echo "https://doh.mk/dns-query" >> accelerated-domains.china.default.conf
 
       - name: Commit latest release version
         run: |
