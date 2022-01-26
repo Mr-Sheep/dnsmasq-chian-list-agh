@@ -8,7 +8,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          token: ${{ secrets.REPO_SCOPED_TOKEN }}
+          token: ${{ github.token }}
       - name: Fetch latest dnsmasq-china-list
         run: |
           wget https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf
