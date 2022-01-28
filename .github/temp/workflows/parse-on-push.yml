@@ -1,0 +1,50 @@
+name: parse latest dnsmasq-china-list
+
+on:
+  push:
+    paths-ignore:
+      - .github/workflow/parse-on-push.yml
+
+jobs:
+  get-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ github.token }}
+      - name: Fetch latest dnsmasq-china-list
+        run: |
+          wget -O - https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/master/accelerated-domains.china.conf | tee accelerated-domains.china.ali.conf accelerated-domains.china.tencent.conf accelerated-domains.china.default.ali.conf accelerated-domains.china.default.tencent.conf >/dev/null
+          ls ${{ github.workspace }}
+      - name: Find and Replace
+        uses: jacobtomlinson/gha-find-replace@v2
+        with: 
+          find: "server="
+          replace: "["
+          regex: false
+      - name: Find and Replace
+        uses: jacobtomlinson/gha-find-replace@v2
+        with:
+          find: "114.114.114.114"
+          replace: "]https://doh.pub/dns-query"
+          include: "*.tencent.conf"
+          regex: false
+      - name: Find and Replace
+        uses: jacobtomlinson/gha-find-replace@v2
+        with:
+          find: "114.114.114.114"
+          replace: "]https://dns.alidns.com/dns-query"
+          include: "*.ali.conf"
+          regex: false
+      - name: dns file with default dns
+        run: |
+          echo -e "https://101.6.6.6/dns-query \nhttps://dns.tuna.tsinghua.edu.cn:8443/dns-query \nhttps://101.6.6.6:8443/dns-query \nhttps://dns.cloudflare.com/dns-query \nhttps://dns.google/dns-query \nhttps://doh.mk/dns-query" >> accelerated-domains.china.default.ali.conf
+          echo -e "https://101.6.6.6/dns-query \nhttps://dns.tuna.tsinghua.edu.cn:8443/dns-query \nhttps://101.6.6.6:8443/dns-query \nhttps://dns.cloudflare.com/dns-query \nhttps://dns.google/dns-query \nhttps://doh.mk/dns-query" >> accelerated-domains.china.default.tencent.conf
+
+      - name: Commit latest release version
+        run: |
+          git config --global user.name 'Snorlax'
+          git config --global user.email '24599209+Mr-Sheep@users.noreply.github.com'
+          git add *.conf
+          git commit -m "daily update from dnsmasq-china-list"
+          git push
